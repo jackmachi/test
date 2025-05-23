@@ -1,5 +1,7 @@
 import streamlit as st
 import yfinance as yf
+from datetime import datetime
+import requests
 
 st.set_page_config(page_title="Satrix S&P 500 Tracker", layout="centered")
 st.title("📈 Satrix S&P 500 ETF Tracker")
@@ -29,3 +31,42 @@ st.metric("Current ETF Price", f"R{current_price:.2f}")
 st.metric("Your Investment Value", f"R{value_now:.2f}", delta=f"R{profit:.2f}")
 
 st.info("Tip: Use trends to decide when to add more (buy dips) or sell (take profit).")
+
+# Chatbot Assistant
+st.subheader("💬 Ask the Market Assistant")
+user_question = st.chat_input("Ask something about the ETF or market today...")
+
+# Function to fetch recent market news headlines
+def fetch_market_news():
+    try:
+        url = "https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey=YOUR_NEWS_API_KEY"
+        res = requests.get(url)
+        if res.status_code == 200:
+            articles = res.json().get("articles", [])
+            return [a["title"] for a in articles[:3]]
+    except:
+        return []
+
+if user_question:
+    first_price = data["Close"].iloc[0]
+    latest_price = data["Close"].iloc[-1]
+    price_change = latest_price - first_price
+    percent_change = (price_change / first_price) * 100
+    time_now = datetime.now().strftime("%H:%M")
+    news = fetch_market_news()
+
+    if "buy" in user_question.lower():
+        response = "📊 The ETF is " + ("up" if price_change > 0 else "down") + f" {percent_change:.2f}% today. Buying now depends on your goals. Cost averaging is often a good long-term strategy."
+    elif "why" in user_question.lower() and "down" in user_question.lower():
+        reason = "Could be due to weak earnings or macroeconomic concerns."
+        response = f"📉 The ETF is down {percent_change:.2f}% today. {reason}"
+    elif "why" in user_question.lower() and "up" in user_question.lower():
+        reason = "Likely due to investor optimism or strong economic indicators."
+        response = f"📈 The ETF is up {percent_change:.2f}% today. {reason}"
+    else:
+        response = f"As of {time_now}, the ETF is trading at R{latest_price:.2f} ({percent_change:.2f}% change today)."
+
+    if news:
+        response += "\n\n🗞️ Top News Headlines:\n- " + "\n- ".join(news)
+
+    st.chat_message("assistant").write(response)
