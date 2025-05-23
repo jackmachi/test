@@ -3,7 +3,7 @@ import yfinance as yf
 
 st.set_page_config(page_title="Satrix S&P 500 Tracker", layout="centered")
 
-st.title(\"📈 Satrix S&P 500 ETF Tracker\")
+st.title("📈 Satrix S&P 500 ETF Tracker")
 
 ticker = yf.Ticker(\"IVV\")
 data = ticker.history(period=\"1d\", interval=\"5m\")
