@@ -36,14 +36,15 @@ st.info("Tip: Use trends to decide when to add more (buy dips) or sell (take pro
 st.subheader("💬 Ask the Market Assistant")
 user_question = st.chat_input("Ask something about the ETF or market today...")
 
-# Function to fetch recent market news headlines
+# Function to fetch recent market news headlines from a free open-source API (Finviz RSS)
 def fetch_market_news():
     try:
-        url = "https://newsapi.org/v2/top-headlines?category=business&language=en&apiKey=YOUR_NEWS_API_KEY"
+        url = "https://finviz.com/feed.ashx"
         res = requests.get(url)
         if res.status_code == 200:
-            articles = res.json().get("articles", [])
-            return [a["title"] for a in articles[:3]]
+            from xml.etree import ElementTree as ET
+            root = ET.fromstring(res.content)
+            return [item.find("title").text for item in root.findall("channel/item")[:3]]
     except:
         return []
 
